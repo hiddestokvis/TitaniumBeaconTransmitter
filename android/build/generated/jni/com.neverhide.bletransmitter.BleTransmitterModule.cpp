@@ -90,6 +90,7 @@ Handle<FunctionTemplate> BleTransmitterModule::getProxyTemplate()
 	titanium::ProxyFactory::registerProxyPair(javaClass, *proxyTemplate);
 
 	// Method bindings --------------------------------------------------------
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "init", BleTransmitterModule::init);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "BeaconMe", BleTransmitterModule::BeaconMe);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "StopBeaconingMe", BleTransmitterModule::StopBeaconingMe);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "example", BleTransmitterModule::example);
@@ -115,6 +116,49 @@ Handle<FunctionTemplate> BleTransmitterModule::getProxyTemplate()
 }
 
 // Methods --------------------------------------------------------------------
+Handle<Value> BleTransmitterModule::init(const Arguments& args)
+{
+	LOGD(TAG, "init()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BleTransmitterModule::javaClass, "init", "()V");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'init' with signature '()V'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+	}
+
+
+
+
+	return v8::Undefined();
+
+}
 Handle<Value> BleTransmitterModule::BeaconMe(const Arguments& args)
 {
 	LOGD(TAG, "BeaconMe()");

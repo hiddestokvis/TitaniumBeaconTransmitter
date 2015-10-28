@@ -9,6 +9,7 @@
 package com.neverhide.bletransmitter;
 
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
@@ -16,13 +17,14 @@ import org.appcelerator.kroll.common.Log;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 
+import java.util.HashMap;
 import java.util.UUID;
+import java.lang.Thread;
 
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Intent;
 import android.app.Activity;
-import android.util.ArrayMap;
 
 import com.neverhide.bletransmitter.util.BleUtils;
 
@@ -41,6 +43,10 @@ public class BleTransmitterModule extends KrollModule
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static TiApplication appContext;
 	private static Boolean isAdvertising = false;
+	protected int requestCode;
+	protected KrollFunction  resultCallback;
+	private static Boolean recall = false;
+	private static Object recallData;
 
 	public BleTransmitterModule()
 	{
@@ -51,17 +57,21 @@ public class BleTransmitterModule extends KrollModule
 	public static void onAppCreate(TiApplication app)
 	{
 		Log.d(LCAT, "inside onAppCreate");
-		
 		appContext = TiApplication.getInstance();
 		
-		mBluetoothManager = BleUtils.getManager(app);
+	}
+	
+	@Kroll.method
+	private void init() {
+		mBluetoothManager = BleUtils.getManager(appContext);
 		if (mBluetoothManager != null) {
 			mBluetoothAdapter = mBluetoothManager.getAdapter();
         }
 		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			Activity activity = TiApplication.getAppRootOrCurrentActivity();
+			Activity activity = this.getActivity();
 	        activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+	        refire();
 		} else {
 			if(!mBluetoothAdapter.isMultipleAdvertisementSupported()) {
 				Log.d(LCAT, "BLE ADVERTISEMENT NOT SUPPORTED :(");
@@ -80,9 +90,29 @@ public class BleTransmitterModule extends KrollModule
 		return false;
 	}
 	
+	public void refire() {
+		if(recall && recallData != null) {
+
+			if(mBluetoothAdapter.isEnabled()) {
+				BeaconMe(recallData);
+				recall = false;
+				recallData = null;
+			} else {
+				android.os.SystemClock.sleep(1000);
+				refire();
+			}
+		}
+	}
+	
 	@Kroll.method
 	public void BeaconMe(Object beaconData)
 	{
+		
+		if(mBluetoothManager == null) {
+			recallData = beaconData;
+			recall = true;
+			init();
+		}
 		
 		if(isAdvertising) {
 			StopBeaconingMe();
@@ -90,7 +120,7 @@ public class BleTransmitterModule extends KrollModule
 		
 		if( isEnabled() ) {
 			@SuppressWarnings("unchecked")
-			ArrayMap<String, Object> dict = (ArrayMap<String, Object>) beaconData;
+			HashMap<String, Object> dict = (HashMap<String, Object>)beaconData;
 			
 			String uuidString = dict.get("uuid").toString();
 	        int major = (Integer) dict.get("major");
