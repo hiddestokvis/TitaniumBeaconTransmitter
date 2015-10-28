@@ -60,7 +60,7 @@ public class BleTransmitterModule extends KrollModule
         }
 		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			Activity activity = TiApplication.getAppCurrentActivity();
+			Activity activity = TiApplication.getAppRootOrCurrentActivity();
 	        activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 		} else {
 			if(!mBluetoothAdapter.isMultipleAdvertisementSupported()) {
