@@ -1,0 +1,18 @@
+%define lookup-function-name lookupGeneratedInit
+%define class-name BleTransmitterBindings
+%{
+
+#include <string.h>
+#include <v8.h>
+#include <KrollBindings.h>
+
+#include "com.neverhide.bletransmitter.ExampleProxy.h"
+#include "com.neverhide.bletransmitter.BleTransmitterModule.h"
+
+
+%}
+struct titanium::bindings::BindEntry;
+%%
+com.neverhide.bletransmitter.ExampleProxy, ::com::neverhide::bletransmitter::bletransmitter::ExampleProxy::bindProxy, ::com::neverhide::bletransmitter::bletransmitter::ExampleProxy::dispose
+com.neverhide.bletransmitter.BleTransmitterModule, ::com::neverhide::bletransmitter::BleTransmitterModule::bindProxy, ::com::neverhide::bletransmitter::BleTransmitterModule::dispose
+%%

@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 0.1
+apiversion: 2
+architectures: armeabi armeabi-v7a x86
+description: ble-transmitter
+author: Hidde Stokvis
+license: Specify your license
+copyright: Neverhide
+
+# these should not be edited
+name: ble-transmitter
+moduleid: com.neverhide.bletransmitter
+guid: 1b51bfd6-251b-4d31-b827-afed98bd9978
+platform: android
+minsdk: 4.1.0.GA
