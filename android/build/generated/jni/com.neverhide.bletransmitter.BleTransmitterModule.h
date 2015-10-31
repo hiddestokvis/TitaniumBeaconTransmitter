@@ -31,6 +31,7 @@ public:
 private:
 	// Methods -----------------------------------------------------------
 	static v8::Handle<v8::Value> init(const v8::Arguments&);
+	static v8::Handle<v8::Value> isSupported(const v8::Arguments&);
 	static v8::Handle<v8::Value> BeaconMe(const v8::Arguments&);
 	static v8::Handle<v8::Value> StopBeaconingMe(const v8::Arguments&);
 	static v8::Handle<v8::Value> example(const v8::Arguments&);

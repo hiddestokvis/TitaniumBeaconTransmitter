@@ -19,7 +19,6 @@ import android.bluetooth.BluetoothManager;
 
 import java.util.HashMap;
 import java.util.UUID;
-import java.lang.Thread;
 
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.BluetoothLeAdvertiser;
@@ -79,9 +78,18 @@ public class BleTransmitterModule extends KrollModule
 		}
 	}
 	
+	@Kroll.method
+	public static Boolean isSupported() {
+		if(BluetoothAdapter.getDefaultAdapter().isMultipleAdvertisementSupported()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	private static Boolean isEnabled() {
 		if(BleUtils.isBLESupported(appContext)) {
-			if(mBluetoothAdapter.isEnabled()) {
+			if(mBluetoothAdapter.isEnabled() && mBluetoothAdapter.isMultipleAdvertisementSupported()) {
 				return true;
 			} else {
 				return false;
@@ -111,7 +119,11 @@ public class BleTransmitterModule extends KrollModule
 		if(mBluetoothManager == null) {
 			recallData = beaconData;
 			recall = true;
-			init();
+			try {
+				init();
+			} catch(Error e) {
+				return;
+			}
 		}
 		
 		if(isAdvertising) {
@@ -119,6 +131,7 @@ public class BleTransmitterModule extends KrollModule
 		}
 		
 		if( isEnabled() ) {
+			
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> dict = (HashMap<String, Object>)beaconData;
 			
