@@ -7,20 +7,21 @@
 	<iphone>
 	</iphone>
 	<android xmlns:android="http://schemas.android.com/apk/res/android">
-		<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    	<uses-permission android:name="android.permission.BLUETOOTH" />
-		<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    	<uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
-    	<application>
-			<service android:name="com.neverhide.bletransmitter" />
-			<receiver
-			    android:name="com.neverhide.bletransmitter"
-			    android:label="BootReceiver">
-			    <intent-filter>
-			        <action android:name="android.intent.action.BOOT_COMPLETED" />
-				</intent-filter>
-			</receiver>
-		</application>
+	        <manifest>
+	            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+	            <uses-permission android:name="android.permission.BLUETOOTH"/>
+	            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+	            <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+	
+	            <application>
+	                <service android:name="com.neverhide.bletransmitter"/>
+	                <receiver android:label="BootReceiver" android:name="com.neverhide.bletransmitter">
+	                    <intent-filter>
+	                        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+	                    </intent-filter>
+	                </receiver>
+	            </application>
+	        </manifest>
 	</android>
 	<mobileweb>
 	</mobileweb>
