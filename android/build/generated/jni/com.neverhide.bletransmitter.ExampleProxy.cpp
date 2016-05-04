@@ -87,8 +87,8 @@ Handle<FunctionTemplate> ExampleProxy::getProxyTemplate()
 	titanium::ProxyFactory::registerProxyPair(javaClass, *proxyTemplate);
 
 	// Method bindings --------------------------------------------------------
-	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "printMessage", ExampleProxy::printMessage);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getMessage", ExampleProxy::getMessage);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "printMessage", ExampleProxy::printMessage);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "setMessage", ExampleProxy::setMessage);
 
 	Local<ObjectTemplate> prototypeTemplate = proxyTemplate->PrototypeTemplate();
@@ -112,6 +112,58 @@ Handle<FunctionTemplate> ExampleProxy::getProxyTemplate()
 }
 
 // Methods --------------------------------------------------------------------
+Handle<Value> ExampleProxy::getMessage(const Arguments& args)
+{
+	LOGD(TAG, "getMessage()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(ExampleProxy::javaClass, "getMessage", "()Ljava/lang/String;");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'getMessage' with signature '()Ljava/lang/String;'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+		return jsException;
+	}
+
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
+
+	env->DeleteLocalRef(jResult);
+
+
+	return v8Result;
+
+}
 Handle<Value> ExampleProxy::printMessage(const Arguments& args)
 {
 	LOGD(TAG, "printMessage()");
@@ -175,58 +227,6 @@ Handle<Value> ExampleProxy::printMessage(const Arguments& args)
 
 
 	return v8::Undefined();
-
-}
-Handle<Value> ExampleProxy::getMessage(const Arguments& args)
-{
-	LOGD(TAG, "getMessage()");
-	HandleScope scope;
-
-	JNIEnv *env = titanium::JNIScope::getEnv();
-	if (!env) {
-		return titanium::JSException::GetJNIEnvironmentError();
-	}
-	static jmethodID methodID = NULL;
-	if (!methodID) {
-		methodID = env->GetMethodID(ExampleProxy::javaClass, "getMessage", "()Ljava/lang/String;");
-		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'getMessage' with signature '()Ljava/lang/String;'";
-			LOGE(TAG, error);
-				return titanium::JSException::Error(error);
-		}
-	}
-
-	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
-
-	jvalue* jArguments = 0;
-
-	jobject javaProxy = proxy->getJavaObject();
-	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
-
-
-
-	if (!JavaObject::useGlobalRefs) {
-		env->DeleteLocalRef(javaProxy);
-	}
-
-
-
-	if (env->ExceptionCheck()) {
-		Handle<Value> jsException = titanium::JSException::fromJavaException();
-		env->ExceptionClear();
-		return jsException;
-	}
-
-	if (jResult == NULL) {
-		return Null();
-	}
-
-	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
-
-	env->DeleteLocalRef(jResult);
-
-
-	return v8Result;
 
 }
 Handle<Value> ExampleProxy::setMessage(const Arguments& args)

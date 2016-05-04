@@ -92,9 +92,9 @@ Handle<FunctionTemplate> BleTransmitterModule::getProxyTemplate()
 	// Method bindings --------------------------------------------------------
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "init", BleTransmitterModule::init);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "isSupported", BleTransmitterModule::isSupported);
-	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "BeaconMe", BleTransmitterModule::BeaconMe);
-	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "StopBeaconingMe", BleTransmitterModule::StopBeaconingMe);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "example", BleTransmitterModule::example);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "StopBeaconingMe", BleTransmitterModule::StopBeaconingMe);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "BeaconMe", BleTransmitterModule::BeaconMe);
 
 	Local<ObjectTemplate> prototypeTemplate = proxyTemplate->PrototypeTemplate();
 	Local<ObjectTemplate> instanceTemplate = proxyTemplate->InstanceTemplate();
@@ -212,6 +212,101 @@ Handle<Value> BleTransmitterModule::isSupported(const Arguments& args)
 	return v8Result;
 
 }
+Handle<Value> BleTransmitterModule::example(const Arguments& args)
+{
+	LOGD(TAG, "example()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BleTransmitterModule::javaClass, "example", "()Ljava/lang/String;");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'example' with signature '()Ljava/lang/String;'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+		return jsException;
+	}
+
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
+
+	env->DeleteLocalRef(jResult);
+
+
+	return v8Result;
+
+}
+Handle<Value> BleTransmitterModule::StopBeaconingMe(const Arguments& args)
+{
+	LOGD(TAG, "StopBeaconingMe()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(BleTransmitterModule::javaClass, "StopBeaconingMe", "()V");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'StopBeaconingMe' with signature '()V'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+	}
+
+
+
+
+	return v8::Undefined();
+
+}
 Handle<Value> BleTransmitterModule::BeaconMe(const Arguments& args)
 {
 	LOGD(TAG, "BeaconMe()");
@@ -277,101 +372,6 @@ Handle<Value> BleTransmitterModule::BeaconMe(const Arguments& args)
 
 
 	return v8::Undefined();
-
-}
-Handle<Value> BleTransmitterModule::StopBeaconingMe(const Arguments& args)
-{
-	LOGD(TAG, "StopBeaconingMe()");
-	HandleScope scope;
-
-	JNIEnv *env = titanium::JNIScope::getEnv();
-	if (!env) {
-		return titanium::JSException::GetJNIEnvironmentError();
-	}
-	static jmethodID methodID = NULL;
-	if (!methodID) {
-		methodID = env->GetMethodID(BleTransmitterModule::javaClass, "StopBeaconingMe", "()V");
-		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'StopBeaconingMe' with signature '()V'";
-			LOGE(TAG, error);
-				return titanium::JSException::Error(error);
-		}
-	}
-
-	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
-
-	jvalue* jArguments = 0;
-
-	jobject javaProxy = proxy->getJavaObject();
-	env->CallVoidMethodA(javaProxy, methodID, jArguments);
-
-	if (!JavaObject::useGlobalRefs) {
-		env->DeleteLocalRef(javaProxy);
-	}
-
-
-
-	if (env->ExceptionCheck()) {
-		titanium::JSException::fromJavaException();
-		env->ExceptionClear();
-	}
-
-
-
-
-	return v8::Undefined();
-
-}
-Handle<Value> BleTransmitterModule::example(const Arguments& args)
-{
-	LOGD(TAG, "example()");
-	HandleScope scope;
-
-	JNIEnv *env = titanium::JNIScope::getEnv();
-	if (!env) {
-		return titanium::JSException::GetJNIEnvironmentError();
-	}
-	static jmethodID methodID = NULL;
-	if (!methodID) {
-		methodID = env->GetMethodID(BleTransmitterModule::javaClass, "example", "()Ljava/lang/String;");
-		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'example' with signature '()Ljava/lang/String;'";
-			LOGE(TAG, error);
-				return titanium::JSException::Error(error);
-		}
-	}
-
-	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
-
-	jvalue* jArguments = 0;
-
-	jobject javaProxy = proxy->getJavaObject();
-	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
-
-
-
-	if (!JavaObject::useGlobalRefs) {
-		env->DeleteLocalRef(javaProxy);
-	}
-
-
-
-	if (env->ExceptionCheck()) {
-		Handle<Value> jsException = titanium::JSException::fromJavaException();
-		env->ExceptionClear();
-		return jsException;
-	}
-
-	if (jResult == NULL) {
-		return Null();
-	}
-
-	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
-
-	env->DeleteLocalRef(jResult);
-
-
-	return v8Result;
 
 }
 
